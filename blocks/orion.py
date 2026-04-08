@@ -13,7 +13,7 @@ class Orion(nn.Module):
             for _ in range(cfg.num_layers)
         ])
         self.norm = nn.RMSNorm(cfg.hidden_dim)
-        self.lm_head = nn.Linear(cfg.hidden_dim, cfg.vocab_size)
+        self.lm_head = nn.Linear(cfg.hidden_dim, cfg.vocab_size,bias=False)
     
     def forward(self, x,z_prev):
         x=self.embed(x)

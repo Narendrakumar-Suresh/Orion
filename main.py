@@ -8,7 +8,7 @@ from upload import upload
 
 # --- 1. Config ---
 class Config:
-    vocab_size   = 50257
+    vocab_size   = 128001  
     hidden_dim   = 512
     num_layers   = 12
     num_heads    = 8
@@ -106,7 +106,7 @@ def train():
     # ---------------------------------------------------------
     # SILENTLY CALCULATE STEPS FOR THE SCHEDULER
     # This prevents the scheduler from crashing, but doesn't force a hard stop
-    target_tokens = 4_920_000_000
+    target_tokens = 300_000_000
     tokens_per_step = cfg.batch_size * cfg.para_len * cfg.max_seq_len
     estimated_steps = target_tokens // tokens_per_step
     scheduler = CosineAnnealingLR(optimizer, T_max=estimated_steps)
@@ -131,11 +131,22 @@ def train():
         optimizer.step()
         scheduler.step()
 
+        if step ==1:
+            print(f"Step {step} | Loss: {loss.item():.4f} | NLL: {nll.item():.4f} | Intent: {intent.item():.4f}")
+        
+        if step ==2:
+            print(f"Step {step} | Loss: {loss.item():.4f} | NLL: {nll.item():.4f} | Intent: {intent.item():.4f}")
+
         if step % 50 == 0:
             print(f"Step {step} | Loss: {loss.item():.4f} | NLL: {nll.item():.4f} | Intent: {intent.item():.4f}")
 
-        if step % 10000 == 0 and step > 0:
-            torch.save(model.state_dict(), f"orion_step_{step}.pt")
+        if step % 500 == 0 and step > 0:
+            torch.save({
+                "model": model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "step": step,
+                }, f"orion_step_{step}.pt")
+
             print(f"Checkpoint saved at step {step}")
 
     # This runs exactly when the dataset stream runs out of data
